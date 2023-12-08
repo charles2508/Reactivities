@@ -1,18 +1,26 @@
 import { Activity } from '../../../app/models/activity';
 import { Button, Item, Label, Segment } from 'semantic-ui-react';
+import { SyntheticEvent, useState } from 'react';
 
 interface Props {
     activities: Activity[];
     selectActivity: (id: string) => void;
     closeForm: () => void;
     deleteActivity: (id: string) => void;
+    submitting: boolean;
 }
-export default function ActivityList({ activities, selectActivity, closeForm, deleteActivity }: Props) {
+export default function ActivityList({ activities, selectActivity, closeForm, deleteActivity, submitting }: Props) {
+    const [target, setTarget] = useState('');
+
+    const handleActivityDelete = (event: SyntheticEvent<HTMLButtonElement>, id: string) => {
+        setTarget(event.currentTarget.name);
+        deleteActivity(id);
+    }
     return (
         <Segment>
             <Item.Group divided>
                 {activities.map(activity => (
-                    <Item>
+                    <Item key={activity.id}>
                         <Item.Content key={activity.id}>
                             <Item.Header as='a'>{activity.title}</Item.Header>
                             <Item.Meta>{activity.date}</Item.Meta>
@@ -22,7 +30,13 @@ export default function ActivityList({ activities, selectActivity, closeForm, de
                             </Item.Description>
                             <Item.Extra>
                                 <Button floated='right' content='View' color='blue' onClick={() => { selectActivity(activity.id), closeForm() }}/>
-                                <Button floated='right' content='Delete' color='red' onClick={() => { deleteActivity(activity.id), closeForm() }}/>
+                                <Button
+                                    name={activity.id}
+                                    loading={submitting && activity.id === target}
+                                    floated='right'
+                                    content='Delete'
+                                    color='red'
+                                    onClick={(event) => { handleActivityDelete(event, activity.id), closeForm() }}/>
                                 <Label basic content={activity.category}/>
                             </Item.Extra>
                         </Item.Content>

@@ -5,10 +5,11 @@ import { Activity } from '../../../app/models/activity';
 interface Props {
     closeForm: () => void;
     selectedActivity: Activity | undefined;
-    createOrEditActivity: (activity: Activity) => void
+    createOrEditActivity: (activity: Activity) => void;
+    submitting: boolean;
 }
 
-export default function ActivityForm({ closeForm, selectedActivity, createOrEditActivity }: Props) {
+export default function ActivityForm({ closeForm, selectedActivity, createOrEditActivity, submitting }: Props) {
 
     const initialState = selectedActivity ?? {
         id: '',
@@ -17,7 +18,7 @@ export default function ActivityForm({ closeForm, selectedActivity, createOrEdit
         description: '',
         category: '',
         city: '',
-        venue: '',
+        venue: ''
     }
 
     const [activity, setActivity] = useState<Activity>(initialState);
@@ -40,10 +41,10 @@ export default function ActivityForm({ closeForm, selectedActivity, createOrEdit
                 <Form.Input placeholder='Title' value={activity.title} name='title' onChange={handleInputChange}/>
                 <Form.TextArea placeholder='Description' value={activity.description} name='description' onChange={handleInputChange}/>
                 <Form.Input placeholder='Category' value={activity.category} name='category' onChange={handleInputChange}/>
-                <Form.Input placeholder='Date' value={activity.date} name='date' onChange={handleInputChange}/>
+                <Form.Input type='date' placeholder='Date' value={activity.date} name='date' onChange={handleInputChange}/>
                 <Form.Input placeholder='City' value={activity.city} name='city' onChange={handleInputChange}/>
                 <Form.Input placeholder='Venue' value={activity.venue} name='venue' onChange={handleInputChange}/>
-                <Button floated='right' positive type='submit' content='Submit'/>
+                <Button loading = {submitting} floated='right' positive type='submit' content='Submit'/>
                 <Button floated='right' type='button' content='Cancel' onClick={() => { closeForm() }}/>
             </Form>
         </Segment>
