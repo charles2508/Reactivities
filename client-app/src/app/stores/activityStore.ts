@@ -1,13 +1,11 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { Activity } from "../models/activity";
 import agent from "../api/agent";
-import { v4 as uuid } from 'uuid';
 
 export default class ActivityStore { 
     activityRegistry: Map<string, Activity>;
     selectedActivity: Activity | undefined = undefined;
-    editMode: boolean = false;
-    loadingInitial: boolean = true;
+    loadingInitial: boolean = false;
     submitting: boolean = false;
 
     constructor() {
@@ -23,39 +21,65 @@ export default class ActivityStore {
     }
 
     loadActivities = async () => {
-
-        try {
-            const data = await agent.Activities.list();
-            // needed in strict-mode of mobx (alternatively, can create an action function to wrap the "set state")
-            runInAction(() => {
-                data.forEach((activity) => {
-                    activity.date = activity.date.split('T')[0];
-                    this.activityRegistry.set(activity.id, activity);
-                })
-                this.loadingInitial = false;
-            });
-        } catch(error) {
-            console.log(error);
-            runInAction(() => {
-                this.loadingInitial = false;
-            });
+        if (this.activityRegistry.size <= 1) {
+            this.loadingInitial = true;
+            try {
+                const data = await agent.Activities.list();
+                // needed in strict-mode of mobx (alternatively, can create an action function to wrap the "set state")
+                runInAction(() => {
+                    data.forEach((activity) => {
+                        this.setActivity(activity);
+                    })
+                    this.loadingInitial = false;
+                });
+            } catch(error) {
+                console.log(error);
+                runInAction(() => {
+                    this.loadingInitial = false;
+                });
+            }
         }
+    }
+
+    loadActivity = async (id: string) => {
+        if (this.activityRegistry.has(id)) {
+            this.selectedActivity = this.activityRegistry.get(id);
+        } else {
+            this.loadingInitial = true;
+            try {
+                const activity = await agent.Activities.details(id);
+                runInAction(() => {
+                    this.setActivity(activity);
+                    this.setSelectedActivity(activity);
+                    this.loadingInitial = false;
+                })
+            } catch (error) {
+                console.log(error);
+                runInAction(() => {
+                    this.loadingInitial = false;
+                })
+            }
+        }
+        return this.selectedActivity;
+    }
+
+    private setActivity = (activity: Activity) => {
+        activity.date = activity.date.split('T')[0];
+        this.activityRegistry.set(activity.id, activity);
     }
 
     createActivity = async (activity: Activity) => {
         this.setSubmitting(true);
-        activity.id = uuid();
-          try {
+        try {
             await agent.Activities.post(activity);
             //Alternatively, can use runInAction()
             this.setActivities(activity);
             this.setSelectedActivity(activity);
-            this.setEditMode(false);
             this.setSubmitting(false);
-          } catch (error) {
+        } catch (error) {
             console.log(error);
             this.setSubmitting(false);
-          }
+        }
     }
 
     updateActivity = async (activity: Activity) => {
@@ -65,7 +89,6 @@ export default class ActivityStore {
             //Alternatively, can use runInAction()
             this.setActivities(activity);
             this.setSelectedActivity(activity);
-            this.setEditMode(false);
             this.setSubmitting(false);
         } catch (error) {
             console.log(error);
@@ -78,7 +101,6 @@ export default class ActivityStore {
         try {
             await agent.Activities.delete(id);
             this.activityRegistry.delete(id);
-            this.setEditMode(false);
             this.setSelectedActivity(undefined);
             this.setSubmitting(false);
         } catch (error) {
@@ -87,34 +109,12 @@ export default class ActivityStore {
         }
     }
 
-    handleSelectActvity = (id: string) => {
-        const selectedActivity = this.activityRegistry.get(id);
-        this.setSelectedActivity(selectedActivity);
-    }
-
-    handleCancelSelectedActivity = () => {
-        this.setSelectedActivity(undefined);
-    }
-
-    handleFormOpen = (id?: string) => {
-        id ? this.handleSelectActvity(id) : this.handleCancelSelectedActivity();
-        this.setEditMode(true);
-    }
-  
-    handleFormClose = () => {
-        this.setEditMode(false);
-    }
-
     setSelectedActivity = (activity: Activity | undefined ) => {
         this.selectedActivity = activity;
     }
 
     setActivities = (activity: Activity) => {
         this.activityRegistry.set(activity.id, activity);
-    }
-
-    setEditMode = (editMode: boolean) => {
-        this.editMode = editMode;
     }
 
     setSubmitting = (submitting: boolean) => {
