@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import {  makeAutoObservable, runInAction } from "mobx";
 import { Activity } from "../models/activity";
 import agent from "../api/agent";
 
@@ -13,11 +13,26 @@ export default class ActivityStore {
         makeAutoObservable(this);
     }
 
-    // computed function
+    // computed function that sort activities by date
     get activitiesByDate() {
         return Array.from(this.activityRegistry.values()).sort((a, b) => {
             return Date.parse(a.date) - Date.parse(b.date);
         })
+    }
+
+    // computed function that group activities by date
+    get groupActivitiesByDate() {
+        const activitiesGroupByDate = this.activitiesByDate.reduce((accumulator, activity) => {
+            const date = activity.date;
+            if (!(date in accumulator)) {
+                accumulator[date] = [ activity ]
+            } else {
+                accumulator[date] = [...accumulator[date], activity]
+            }
+            return accumulator;
+        }, {} as {[key: string]: Activity[]});
+        
+        return Object.entries(activitiesGroupByDate);
     }
 
     loadActivities = async () => {
