@@ -54,7 +54,16 @@ namespace API.Controllers
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
             var user = await _userManager.FindByNameAsync(registerDto.UserName);
-            if (user != null) return BadRequest("Username already exists");
+            if (user != null) {
+                ModelState.AddModelError("username", "Username already exists");
+            }
+            
+            user = await _userManager.FindByEmailAsync(registerDto.Email);
+            if (user != null) {
+                ModelState.AddModelError("email", "Email already exists");
+            }
+            
+            if (ModelState.ErrorCount > 0) return ValidationProblem();
 
             var newUser = new AppUser
             {

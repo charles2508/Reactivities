@@ -1,14 +1,37 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, reaction } from "mobx";
 import { ServerError } from "../models/serverError";
 
 
 export default class CommonStore {
     error: ServerError | null = null;
+    token: string | null | undefined = localStorage.getItem('jwt');
+    appLoaded: boolean = false;
+
     constructor() {
         makeAutoObservable(this);
+        
+        // react to an observable change. When a token observable changes, it will run the 2nd parameter function.
+        reaction(
+            () => this.token,
+            (token) => {
+                if (token) {
+                    localStorage.setItem('jwt', token);
+                } else {
+                    localStorage.removeItem('jwt');
+                }
+            }
+        );
     }
 
-    setServerError(error: ServerError) {
+    setServerError = (error: ServerError) => {
         this.error = error;
+    }
+
+    setToken = (token: string | null | undefined) => {
+        this.token = token;
+    }
+
+    setAppLoaded = () => {
+        this.appLoaded = true;
     }
 }
