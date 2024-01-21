@@ -23,7 +23,11 @@ namespace Application.Activities
             }
             public async Task<Result<List<ActivityDto>>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var activities = await _context.Activities.Include(activity => activity.Attendees).ThenInclude(attendees => attendees.AppUser).ToListAsync();
+                var activities = await _context.Activities
+                    .Include(activity => activity.Attendees)
+                    .ThenInclude(attendees => attendees.AppUser)
+                    .ThenInclude(u => u.Photos)
+                    .ToListAsync();
                 // In order to solve the problem of an infinite loop: "A possible object cycle was detected" that is:
                 // activity -> Attendees -> activity -> Attendees -> ...
                 // We have to create a new ActivityDTO

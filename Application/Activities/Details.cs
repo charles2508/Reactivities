@@ -26,7 +26,11 @@ namespace Application.Activities
             }
             public async Task<Result<ActivityDto>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var activity = await _context.Activities.Include(a => a.Attendees).ThenInclude(attendees => attendees.AppUser).FirstOrDefaultAsync(a => a.Id == request.Id);
+                var activity = await _context.Activities
+                                            .Include(a => a.Attendees)
+                                            .ThenInclude(attendees => attendees.AppUser)
+                                            .ThenInclude(u => u.Photos)
+                                            .FirstOrDefaultAsync(a => a.Id == request.Id);
                 var activityDto = _mapper.Map<ActivityDto>(activity);
 
                 return Result<ActivityDto>.Success(activityDto);
