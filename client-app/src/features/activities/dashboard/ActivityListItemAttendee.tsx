@@ -14,11 +14,11 @@ export default function ActivityListItemAttendee({attendees}: Props) {
                 <Popup
                     hoverable
                     trigger={
-                        <List.Item as={Link} to={`/profiles/${attendee.username}`}>
+                        <List.Item as={Link} to={`/profiles/${attendee.userName}`}>
                             <Image size='mini' circular src={attendee.image || '/assets/user.png'}/>
                         </List.Item>
                     }
-                    key={attendee.username}
+                    key={attendee.userName}
                     >
                     <Popup.Content>
                         <ProfileCard profile={attendee}/>

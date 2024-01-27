@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
 import { User, UserFormValues } from "../models/user";
+import { Profile } from "../models/profile";
+import { Photo } from "../models/photo";
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
 
@@ -84,9 +86,24 @@ const Account = {
     currentUser: () => requests.get<User>('/account')
 }
 
+const Profiles = {
+    get: (username: string) => requests.get<Profile>(`/profiles/${username}`),
+    uploadPhoto: (file: Blob) => {
+        const formData = new FormData();
+        formData.append('File', file);
+        console.log(formData);
+        return axios.post<Photo>('photos', formData, {
+            headers: {'Content-Type': 'multipart/form-data'}
+        })
+    },
+    setMain: (id: string) => requests.post<void>(`/photos/${id}/setMain`, {}),
+    delete: (id: string) => requests.delete<void>(`/photos/${id}`)
+}
+
 const agent = {
     Activities,
-    Account
+    Account,
+    Profiles
 }
 
 export default agent;

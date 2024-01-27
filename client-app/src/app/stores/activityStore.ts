@@ -86,9 +86,9 @@ export default class ActivityStore {
         const user = store.userStore.user;
         console.log(user);
         if (user) {
-            activity.host = activity.attendees!.find(attendee => attendee.username == activity.hostUsername);
+            activity.host = activity.attendees!.find(attendee => attendee.userName == activity.hostUsername);
             activity.isHost = activity.hostUsername === user.userName;
-            activity.isGoing = activity.attendees!.some(attendee => attendee.username === user.userName);
+            activity.isGoing = activity.attendees!.some(attendee => attendee.userName === user.userName);
         }
         console.log(activity);
         activity.date = new Date(activity.date!);
@@ -161,7 +161,7 @@ export default class ActivityStore {
         try {
             await agent.Activities.attend(this.selectedActivity!.id);
             if (this.selectedActivity!.isGoing) {
-                this.selectedActivity!.attendees = this.selectedActivity?.attendees?.filter(a => a.username !== user.userName);
+                this.selectedActivity!.attendees = this.selectedActivity?.attendees?.filter(a => a.userName !== user.userName);
             } else {
                 const attendee = new Profile(user);
                 this.selectedActivity?.attendees?.push(attendee);
