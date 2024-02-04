@@ -19,7 +19,11 @@ export default observer(function ActivityDetails() {
         if (id) {
             loadActivity(id);
         }
-    }, [id, loadActivity]);
+
+        return () => {
+            activityStore.setSelectedActivity(undefined);
+        }
+    }, [id, loadActivity, activityStore]);
 
     if (loadingInitial || !activity) return <LoadingComponent/> 
     
