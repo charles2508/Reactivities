@@ -1,12 +1,14 @@
 import { Card, Icon, Image } from "semantic-ui-react";
 import { Profile } from "../../app/models/profile";
 import { Link } from "react-router-dom";
+import FollowButton from "./FollowButton";
+import { observer } from "mobx-react-lite";
 
 interface Props {
     profile: Profile
 }
 
-export default function ProfileCard({profile}: Props) {
+export default observer(function ProfileCard({profile}: Props) {
     return(
         <Card as={Link} to={`/profiles/${profile.userName}`}>
             <Image src={profile.image || '/assets/user.png'}/>
@@ -16,8 +18,9 @@ export default function ProfileCard({profile}: Props) {
             </Card.Content>
             <Card.Content extra>
                 <Icon name='user'/>
-                20 followers
+                {profile.followersCount}
             </Card.Content>
+            <FollowButton profile={profile}/>
         </Card>
     )
-}
+})

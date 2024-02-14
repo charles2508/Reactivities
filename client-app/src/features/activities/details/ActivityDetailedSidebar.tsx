@@ -25,9 +25,9 @@ export default observer(function ActivityDetailedSidebar ({ activity: {attendees
                 <List relaxed divided>
                     {attendees.map(attendee => {
                             return (
-                                <Item style={{ position: 'relative' }} key={attendee.username}>
+                                <Item style={{ position: 'relative' }} key={attendee.userName}>
                                     {
-                                        attendee.username === host?.username &&
+                                        attendee.userName === host?.userName &&
                                         <Label
                                             style={{ position: 'absolute' }}
                                             color='orange'
@@ -39,9 +39,9 @@ export default observer(function ActivityDetailedSidebar ({ activity: {attendees
                                     <Image size='tiny' src={attendee.image || '/assets/user.png'} />
                                     <Item.Content verticalAlign='middle'>
                                         <Item.Header as='h3'>
-                                            <Link to={`/profiles/${attendee.username}`}>{attendee.displayName}</Link>
+                                            <Link to={`/profiles/${attendee.userName}`}>{attendee.displayName}</Link>
                                         </Item.Header>
-                                        <Item.Extra style={{ color: 'orange' }}>Following</Item.Extra>
+                                        <Item.Extra style={{ color: 'orange' }}>{attendee.following && "Following"}</Item.Extra>
                                     </Item.Content>
                                 </Item>
                             )

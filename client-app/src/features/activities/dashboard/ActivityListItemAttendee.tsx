@@ -2,12 +2,18 @@ import { List, Image, Popup } from "semantic-ui-react";
 import { IProfile } from "../../../app/models/profile";
 import { Link } from "react-router-dom";
 import ProfileCard from "../../profiles/ProfileCard";
+import { observer } from "mobx-react-lite";
 
 interface Props {
     attendees: IProfile[]
 }
 
-export default function ActivityListItemAttendee({attendees}: Props) {
+export default observer(function ActivityListItemAttendee({attendees}: Props) {
+    const styles = {
+        borderColor: 'orange',
+        borderWidth: 3
+    };
+
     return(
         <List horizontal>
             {attendees.map(attendee => (
@@ -15,7 +21,7 @@ export default function ActivityListItemAttendee({attendees}: Props) {
                     hoverable
                     trigger={
                         <List.Item as={Link} to={`/profiles/${attendee.userName}`}>
-                            <Image size='mini' circular src={attendee.image || '/assets/user.png'}/>
+                            <Image size='mini' circular src={attendee.image || '/assets/user.png'} bordered style={attendee.following ? styles : null}/>
                         </List.Item>
                     }
                     key={attendee.userName}
@@ -27,4 +33,4 @@ export default function ActivityListItemAttendee({attendees}: Props) {
             ))}
         </List>
     )
-}
+})

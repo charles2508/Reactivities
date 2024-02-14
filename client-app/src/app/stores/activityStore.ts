@@ -1,19 +1,32 @@
-import {  makeAutoObservable, runInAction } from "mobx";
+import {  makeAutoObservable, reaction, runInAction } from "mobx";
 import { Activity, ActivityFormValues } from "../models/activity";
 import agent from "../api/agent";
 import { format } from "date-fns";
 import { store } from "./store";
 import { Profile } from "../models/profile";
+import Pagination, { PagingParams } from "../models/Pagination";
 
 export default class ActivityStore { 
     activityRegistry: Map<string, Activity>;
     selectedActivity: Activity | undefined = undefined;
     loadingInitial: boolean = false;
     submitting: boolean = false;
+    pagination: Pagination | null = null;
+    pagingParams: PagingParams = new PagingParams();
+    predicate = new Map().set("all", true);
 
     constructor() {
         this.activityRegistry = new Map<string, Activity>();
         makeAutoObservable(this);
+
+        reaction(
+            () => this.predicate.keys(),
+            () => {
+                this.pagingParams = new PagingParams();
+                this.activityRegistry.clear();
+                this.loadActivities();
+            }
+        )
     }
 
     // computed function that sort activities by date
@@ -38,25 +51,64 @@ export default class ActivityStore {
         return Object.entries(activitiesGroupByDate);
     }
 
-    loadActivities = async () => {
-        if (this.activityRegistry.size <= 1) {
-            this.loadingInitial = true;
-            try {
-                const data = await agent.Activities.list();
-                // needed in strict-mode of mobx (alternatively, can create an action function to wrap the "set state")
-                runInAction(() => {
-                    data.forEach((activity) => {
-                        this.setActivity(activity);
-                    })
-                    this.loadingInitial = false;
-                });
-            } catch(error) {
-                console.log(error);
-                runInAction(() => {
-                    this.loadingInitial = false;
-                });
-            }
+    setPagingParams = (pagingParams: PagingParams) => {
+        this.pagingParams = pagingParams;
+    }
+
+    setPredicate = (key: string, value: Date | boolean) => {
+        const resetPredicate = () => {
+            this.predicate.forEach((_, key) => {
+                if (key !== "startDate") this.predicate.delete(key);
+            })
+        };
+        
+        switch(key) {
+            case "startDate":
+                this.predicate.delete("startDate");
+                this.predicate.set("startDate", value as Date);
+                break;
+            default:
+                resetPredicate();
+                this.predicate.set(key, value);
+                break;
         }
+    }
+
+    get axiosUrlParams() {
+        const params = new URLSearchParams();
+        params.append("pageSize", this.pagingParams!.pageSize.toString());
+        params.append("pageNumber", this.pagingParams!.pageNumber.toString());
+        this.predicate.forEach((value, key) => {
+            if (key === "startDate") {
+                value = (value as Date).toISOString();
+            }
+            params.append(key, value);
+        });
+        return params;
+    }
+
+    loadActivities = async () => {
+        this.loadingInitial = true;
+        try {
+            const response = await agent.Activities.list(this.axiosUrlParams);
+            // needed in strict-mode of mobx (alternatively, can create an action function to wrap the "set state")
+            runInAction(() => {
+                response.data.forEach((activity) => {
+                    this.setActivity(activity);
+                })
+            });
+            this.setPagination(response.pagination);
+        } catch(error) {
+            console.log(error);
+        } finally {
+            runInAction(() => {
+                this.loadingInitial = false;
+            });
+        }
+    }
+
+    setPagination = (pagination: Pagination) => {
+        this.pagination = pagination;
     }
 
     loadActivity = async (id: string) => {
@@ -66,7 +118,6 @@ export default class ActivityStore {
             this.loadingInitial = true;
             try {
                 const activity = await agent.Activities.details(id);
-                console.log(activity);
                 runInAction(() => {
                     this.setActivity(activity);
                     this.setSelectedActivity(activity);
@@ -84,13 +135,11 @@ export default class ActivityStore {
 
     private setActivity = (activity: Activity) => {
         const user = store.userStore.user;
-        console.log(user);
         if (user) {
             activity.host = activity.attendees!.find(attendee => attendee.userName == activity.hostUsername);
             activity.isHost = activity.hostUsername === user.userName;
             activity.isGoing = activity.attendees!.some(attendee => attendee.userName === user.userName);
         }
-        console.log(activity);
         activity.date = new Date(activity.date!);
         this.activityRegistry.set(activity.id, activity);
     }
@@ -161,7 +210,7 @@ export default class ActivityStore {
         try {
             await agent.Activities.attend(this.selectedActivity!.id);
             if (this.selectedActivity!.isGoing) {
-                this.selectedActivity!.attendees = this.selectedActivity?.attendees?.filter(a => a.userName !== user.userName);
+                this.selectedActivity!.attendees = this.selectedActivity!.attendees?.filter(a => a.userName !== user.userName);
             } else {
                 const attendee = new Profile(user);
                 this.selectedActivity?.attendees?.push(attendee);
@@ -202,4 +251,17 @@ export default class ActivityStore {
         this.submitting = submitting;
     }
 
+    updateAttendenceFollowing = (userName: string) => {
+        this.activityRegistry.forEach(activity => activity.attendees?.map(attendee => {
+            if (attendee.userName === userName) {
+                if (attendee.following) {
+                    attendee.followersCount -= 1;
+                } else {
+                    attendee.followersCount += 1;
+                }
+                attendee.following = !attendee.following;
+            }
+            return attendee;
+        }))
+    }
 }

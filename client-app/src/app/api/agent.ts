@@ -4,8 +4,10 @@ import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
 import { User, UserFormValues } from "../models/user";
-import { Profile } from "../models/profile";
+import { IProfile, Profile } from "../models/profile";
 import { Photo } from "../models/photo";
+import { PaginatedResult } from "../models/Pagination";
+import { UserActivity } from "../models/UserActivity";
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
 
@@ -19,12 +21,16 @@ const sleep = (delay: number) => {
 // Otherwise, it will get into onRejected path
 axios.interceptors.response.use(async (response) => { 
     await sleep(1000);
+    const pagination = response.headers["pagination"];
+    if (pagination) {
+        response.data = new PaginatedResult(response.data, JSON.parse(pagination));
+        return response as AxiosResponse<PaginatedResult<unknown>>;
+    }
     return response;
 }, (error: AxiosError) => {
     const { data, status, config } = error.response as AxiosResponse;
     switch(status) {
         case 400:
-            console.log(error);
             if (config.method === 'get' && data.errors && Object.prototype.hasOwnProperty.call(data.errors, 'id')) {
                 router.navigate('/not-found');
             }
@@ -72,7 +78,7 @@ const requests = {
 }
 
 const Activities = {
-    list: () => requests.get<Activity[]>('/activities'),
+    list: (params: URLSearchParams) => axios.get<PaginatedResult<Activity[]>>('/activities', {params}).then(response => responseBody(response)),
     details: (id: string) => requests.get<Activity>(`/activities/${id}`),
     post: (activity: ActivityFormValues) => requests.post<void>('/activities', activity),
     update: (activity: ActivityFormValues) => requests.put<void>(`/activities/${activity.id}`, activity),
@@ -91,13 +97,15 @@ const Profiles = {
     uploadPhoto: (file: Blob) => {
         const formData = new FormData();
         formData.append('File', file);
-        console.log(formData);
         return axios.post<Photo>('photos', formData, {
             headers: {'Content-Type': 'multipart/form-data'}
         })
     },
     setMain: (id: string) => requests.post<void>(`/photos/${id}/setMain`, {}),
-    delete: (id: string) => requests.delete<void>(`/photos/${id}`)
+    delete: (id: string) => requests.delete<void>(`/photos/${id}`),
+    updateFollowing: (username: string) => requests.post<void>(`/follow/${username}`, {}),
+    loadFollowings: (username: string, predicate: string) => requests.get<IProfile[]>(`follow/${username}?predicate=${predicate}`),
+    loadEvents: (username: string, predicate: string) => requests.get<UserActivity[]>(`profiles/${username}/activities?predicate=${predicate}`)
 }
 
 const agent = {

@@ -13,7 +13,7 @@ export interface IActivity {
     isHost: boolean;
     host?: IProfile;
     hostUsername: string;
-    attendees?: IProfile[]
+    attendees: IProfile[]
 }
 
 export class Activity implements Activity {
@@ -29,7 +29,7 @@ export class Activity implements Activity {
     isHost: boolean = false;
     host?: IProfile = undefined;
     hostUsername: string = '';
-    attendees?: IProfile[];
+    attendees: IProfile[] = [];
 
     /**
      *

@@ -3,12 +3,13 @@ import { Activity } from "../../../app/models/activity"
 import { Link } from "react-router-dom"
 import { format } from "date-fns"
 import ActivityListItemAttendee from "./ActivityListItemAttendee"
+import { observer } from "mobx-react-lite"
 
 interface Props {
     activity: Activity
 }
 
-export default function ActivityListItem({ activity }: Props) {
+export default observer(function ActivityListItem({ activity }: Props) {
     return (
         <Segment.Group>
             <Segment>
@@ -62,4 +63,4 @@ export default function ActivityListItem({ activity }: Props) {
             </Segment>
         </Segment.Group>
     )
-}
+})
