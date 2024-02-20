@@ -1,0 +1,3 @@
+# Don't need to copy these into the container as they will be recreated when running dotnet restore command
+**/bin
+**/obj

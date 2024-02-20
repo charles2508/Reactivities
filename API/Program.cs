@@ -37,8 +37,13 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseDefaultFiles();
+// Default file location is located inside wwwroot folder
+app.UseStaticFiles();
+
 app.MapControllers();
 app.MapHub<ChatHub>("/chat");
+app.MapFallbackToController("Index", "Fallback");
 
 //using is used when we want to destroy an object after using it
 using var scope = app.Services.CreateScope();

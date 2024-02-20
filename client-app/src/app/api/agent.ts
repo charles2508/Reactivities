@@ -9,7 +9,7 @@ import { Photo } from "../models/photo";
 import { PaginatedResult } from "../models/Pagination";
 import { UserActivity } from "../models/UserActivity";
 
-axios.defaults.baseURL = 'http://localhost:5000/api';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 const sleep = (delay: number) => {
     return new Promise((resolve) => {
@@ -20,7 +20,7 @@ const sleep = (delay: number) => {
 // Any response's status code in range 200 will follow the onFulfilled path
 // Otherwise, it will get into onRejected path
 axios.interceptors.response.use(async (response) => { 
-    await sleep(1000);
+    if (import.meta.env.DEV) await sleep(1000);
     const pagination = response.headers["pagination"];
     if (pagination) {
         response.data = new PaginatedResult(response.data, JSON.parse(pagination));

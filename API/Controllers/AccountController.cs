@@ -1,6 +1,7 @@
 
 
 using System.Security.Claims;
+using System.Text.Json;
 using API.DTOs;
 using API.Services;
 using Domain;
@@ -25,11 +26,18 @@ namespace API.Controllers
 
         private UserDto CreateUserDtoFromUser(AppUser user)
         {
+            var Image = "";
+            if (user.Photos.Any(p => p.IsMain)) {
+                Image = user.Photos.FirstOrDefault(p => p.IsMain).Url;
+            } else {
+                Image = null;
+            }
+
             return new UserDto
             {
                 UserName = user.UserName,
                 DisplayName = user.DisplayName,
-                Image = user.Photos.FirstOrDefault(p => p.IsMain).Url,
+                Image = Image,
                 Token = _tokenService.CreateToken(user)
             };
         }

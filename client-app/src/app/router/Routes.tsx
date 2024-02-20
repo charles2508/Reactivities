@@ -7,6 +7,7 @@ import TestErrors from "../../features/errors/TestErrors";
 import NotFound from "../../features/errors/NotFound";
 import ServerError from "../../features/errors/ServerError";
 import ProfilePage from "../../features/profiles/ProfilePage";
+import RequireAuth from "./RequireAuth";
 
 export const routes: RouteObject[] = [
     {
@@ -14,25 +15,34 @@ export const routes: RouteObject[] = [
         element: <App />,
         children: [
             {
-                path: "activities",
-                element: <ActivityDashboard/>,
-            },
-            // This path is not a child of ActivityDashboard. Its a completely different path (not rendered inside ActivityDashboard)
-            {
-                path: "activities/:id",
-                element: <ActivityDetails/>
-            },
-            {
-                path: 'createActivity',
-                element: <ActivityForm key="create"/>
-            },
-            {
-                path: 'manage/:id',
-                element: <ActivityForm key="manage"/>
-            },
-            {
-                path: 'errors',
-                element: <TestErrors/>
+                element: <RequireAuth/>,
+                children: [
+                    {
+                        path: "activities",
+                        element: <ActivityDashboard/>,
+                    },
+                    // This path is not a child of ActivityDashboard. Its a completely different path (not rendered inside ActivityDashboard)
+                    {
+                        path: "activities/:id",
+                        element: <ActivityDetails/>
+                    },
+                    {
+                        path: 'createActivity',
+                        element: <ActivityForm key="create"/>
+                    },
+                    {
+                        path: 'manage/:id',
+                        element: <ActivityForm key="manage"/>
+                    },
+                    {
+                        path: 'errors',
+                        element: <TestErrors/>
+                    },
+                    {
+                        path:'/profiles/:username',
+                        element: <ProfilePage/>
+                    }
+                ]
             },
             {
                 path: 'not-found',
@@ -41,10 +51,6 @@ export const routes: RouteObject[] = [
             {
                 path:'server-error',
                 element: <ServerError/>
-            },
-            {
-                path:'/profiles/:username',
-                element: <ProfilePage/>
             },
             {
                 path: '*',

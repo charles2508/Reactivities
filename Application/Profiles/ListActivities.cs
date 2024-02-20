@@ -47,10 +47,10 @@ namespace Application.Profiles
                                                 .AsQueryable();
                     if (request.Predicate == "future")
                     {
-                        query = query.Where(aa => aa.Activity.Date > DateTime.Now);
+                        query = query.Where(aa => aa.Activity.Date > DateTime.UtcNow);
                     } else
                     {
-                        query = query.Where(aa => aa.Activity.Date <= DateTime.Now);
+                        query = query.Where(aa => aa.Activity.Date <= DateTime.UtcNow);
                     }
                     activities = await query.ToListAsync();
                 }
