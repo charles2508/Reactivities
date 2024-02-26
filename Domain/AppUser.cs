@@ -15,5 +15,6 @@ namespace Domain
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<UserFollowing> Followings { get; set; } = new List<UserFollowing>();
         public ICollection<UserFollowing> Followers { get; set; } = new List<UserFollowing>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }
