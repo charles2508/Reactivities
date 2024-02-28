@@ -264,4 +264,14 @@ export default class ActivityStore {
             return attendee;
         }))
     }
+
+    updateAttendeeProfile = (userName: string, newDisplayName: string, bio?: string) => {
+        this.activityRegistry.forEach(activity => activity.attendees.map(attendee => {
+            if (attendee.userName === userName) {
+                attendee.displayName = newDisplayName;
+                attendee.bio = bio;
+            }
+            return attendee;
+        }))
+    }
 }

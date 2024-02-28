@@ -3,7 +3,6 @@ import { User, UserFormValues } from "../models/user";
 import agent from "../api/agent";
 import { store } from "./store";
 import { router } from "../router/Routes";
-import Cookies from 'js-cookie';
 
 export default class UserStore {
     user: User | null = null;
@@ -47,6 +46,11 @@ export default class UserStore {
         }
     }
 
+    setDisplayName = (displayName: string) => {
+        if (this.user) this.user.displayName = displayName;
+    }
+
+
     register = async (creds: UserFormValues) => {
         const user = await agent.Account.register(creds);
         store.commonStore.setToken(user.token);
@@ -58,7 +62,6 @@ export default class UserStore {
 
     refreshToken = async () => {
         this.resetRefreshTokenTimeout();
-        console.log(Cookies.get("cf_clearance"));
         try {
             const user = await agent.Account.refreshToken();
             runInAction(() => {

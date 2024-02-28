@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction, runInAction } from "mobx";
-import { IProfile } from "../models/profile";
+import { IProfile, ProfileFormValues } from "../models/profile";
 import agent from "../api/agent";
 import { store } from "./store";
 import { Photo } from "../models/photo";
@@ -11,6 +11,7 @@ export default class ProfileStore {
     uploading: boolean = false;
     loading: boolean = false;
     deleting: boolean = false;
+    updating: boolean = false;
     followings: IProfile[] = [];
     loadingFollowings: boolean = false;
     activeTab: number = 0;
@@ -100,6 +101,24 @@ export default class ProfileStore {
         }
     }
 
+    updateProfile = async (profile: ProfileFormValues) => {
+        this.updating = true;
+        if (!this.profile) return;
+        try {
+            await agent.Profiles.update(profile);
+            runInAction(() => {
+                this.profile!.bio = profile.bio;
+                this.profile!.displayName = profile.displayName;
+                store.userStore.setDisplayName(profile.displayName);
+                store.activityStore.updateAttendeeProfile(this.profile!.userName, profile.displayName, profile.bio);
+                this.uploading = false;
+            });
+        } catch (error) {
+            console.log(error);
+            runInAction(() => this.uploading = false);
+        }
+    }
+
     deletePhoto = async (id: string) => {
         this.deleting = true;
         try {
@@ -116,7 +135,6 @@ export default class ProfileStore {
         }
     }
 
-    // revisit
     updateFollowing = async (userName: string, following: boolean) => {
         this.loading = true;
         try {

@@ -30,3 +30,8 @@ export class Profile implements IProfile {
         this.image = user.image;
     }
 }
+
+export interface ProfileFormValues {
+    bio?: string;
+    displayName: string;
+}

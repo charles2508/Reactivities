@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
 import { User, UserFormValues } from "../models/user";
-import { IProfile, Profile } from "../models/profile";
+import { IProfile, Profile, ProfileFormValues } from "../models/profile";
 import { Photo } from "../models/photo";
 import { PaginatedResult } from "../models/Pagination";
 import { UserActivity } from "../models/UserActivity";
@@ -100,6 +100,7 @@ const Account = {
 
 const Profiles = {
     get: (username: string) => requests.get<Profile>(`/profiles/${username}`),
+    update: (profile: ProfileFormValues) => requests.put<void>('/profiles', profile),
     uploadPhoto: (file: Blob) => {
         const formData = new FormData();
         formData.append('File', file);

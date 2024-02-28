@@ -1,5 +1,4 @@
 using Application.Photos;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

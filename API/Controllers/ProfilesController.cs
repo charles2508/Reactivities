@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Application.Profiles;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -19,6 +16,12 @@ namespace API.Controllers
         public async Task<IActionResult> GetEvent(string username, [FromQuery] string predicate)
         {
             return HandleResult(await Mediator.Send(new ListActivities.Query {UserName = username, Predicate = predicate}));
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateProfile(AppUser user)
+        {
+            return HandleResult(await Mediator.Send(new Edit.Command {Bio = user.Bio, DisplayName = user.DisplayName}));
         }
     }
 }

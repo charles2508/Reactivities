@@ -3,11 +3,12 @@ import ProfilePhotos from "./ProfilePhotos"
 import ProfileFollowings from "./ProfileFollowings"
 import useStore from "../../app/stores/store"
 import ProfileActivities from "./ProfileActivities";
+import ProfileAbout from "./ProfileAbout";
 
 export default function ProfileContent() {
     const {profileStore} = useStore();
     const panes = [
-        {menuItem: 'About', render: () => <Tab.Pane>About Content</Tab.Pane>},
+        {menuItem: 'About', render: () => <Tab.Pane><ProfileAbout/></Tab.Pane>},
         {menuItem: 'Photos', render: () => <Tab.Pane><ProfilePhotos/></Tab.Pane>},
         {menuItem: 'Events', render: () => <Tab.Pane><ProfileActivities/></Tab.Pane>},
         {menuItem: 'Followers', render: () => <Tab.Pane><ProfileFollowings/></Tab.Pane>},
